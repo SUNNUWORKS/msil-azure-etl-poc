@@ -1,0 +1,32 @@
+{
+    "name": "IncrementalLoad",
+    "properties": {
+        "annotations": [],
+        "runtimeState": "Stopped",
+        "pipelines": [
+            {
+                "pipelineReference": {
+                    "referenceName": "Pl01_IncrementalLoad_ORAC_TO_ADLS",
+                    "type": "PipelineReference"
+                }
+            }
+        ],
+        "type": "ScheduleTrigger",
+        "typeProperties": {
+            "recurrence": {
+                "frequency": "Day",
+                "interval": 1,
+                "startTime": "2020-05-11T11:14:00Z",
+                "timeZone": "UTC",
+                "schedule": {
+                    "minutes": [
+                        35
+                    ],
+                    "hours": [
+                        18
+                    ]
+                }
+            }
+        }
+    }
+}

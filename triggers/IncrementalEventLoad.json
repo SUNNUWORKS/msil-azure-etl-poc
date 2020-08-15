@@ -1,0 +1,28 @@
+{
+    "name": "IncrementalEventLoad",
+    "properties": {
+        "annotations": [],
+        "runtimeState": "Stopped",
+        "pipelines": [
+            {
+                "pipelineReference": {
+                    "referenceName": "Pl03_IncrementalLoad_ADLS_TO_SynapseDW",
+                    "type": "PipelineReference"
+                },
+                "parameters": {
+                    "FolderName": "@trigger().outputs.body.folderPath",
+                    "FileName": "@trigger().outputs.body.fileName"
+                }
+            }
+        ],
+        "type": "BlobEventsTrigger",
+        "typeProperties": {
+            "blobPathBeginsWith": "/poc/blobs/Oracle_DB_Data",
+            "ignoreEmptyBlobs": true,
+            "scope": "/subscriptions/82b50548-e49c-40f1-b534-6fa5c544cbab/resourceGroups/MSILPoC/providers/Microsoft.Storage/storageAccounts/mspocdls",
+            "events": [
+                "Microsoft.Storage.BlobCreated"
+            ]
+        }
+    }
+}
