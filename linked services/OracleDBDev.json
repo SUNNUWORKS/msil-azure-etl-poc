@@ -1,0 +1,16 @@
+{
+    "name": "OracleDBDev",
+    "type": "Microsoft.DataFactory/factories/linkedservices",
+    "properties": {
+        "annotations": [],
+        "type": "Oracle",
+        "typeProperties": {
+            "connectionString": "Connection string to the Oracle Database for development",
+            "encryptedCredential": "Specify the encrypted credentials to your Oracle Database"
+        },
+        "connectVia": {
+            "referenceName": "OracleDBSHIR",
+            "type": "IntegrationRuntimeReference"
+        }
+    }
+}

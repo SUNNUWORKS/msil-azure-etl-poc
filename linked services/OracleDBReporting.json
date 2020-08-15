@@ -1,0 +1,16 @@
+{
+    "name": "OracleDBReporting",
+    "type": "Microsoft.DataFactory/factories/linkedservices",
+    "properties": {
+        "annotations": [],
+        "type": "Oracle",
+        "typeProperties": {
+            "connectionString": "Connection string to the Oracle database for production",
+            "encryptedCredential": "Specify the encrypted Credentials to your Oracle databse for production"
+        },
+        "connectVia": {
+            "referenceName": "OracleDBSHIR",
+            "type": "IntegrationRuntimeReference"
+        }
+    }
+}
