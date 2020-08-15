@@ -1,0 +1,44 @@
+{
+    "name": "ForEach3",
+    "type": "ForEach",
+    "dependsOn": [
+        {
+            "activity": "Wait_for_5mins",
+            "dependencyConditions": [
+                "Succeeded"
+            ]
+        }
+    ],
+    "userProperties": [],
+    "typeProperties": {
+        "items": {
+            "value": "@pipeline().parameters.SP_Tables",
+            "type": "Expression"
+        },
+        "activities": [
+            {
+                "name": "Stored procedure1",
+                "type": "SqlServerStoredProcedure",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "storedProcedureName": {
+                        "value": "@concat('dbo.',item(),'_UPSERT')",
+                        "type": "Expression"
+                    }
+                },
+                "linkedServiceName": {
+                    "referenceName": "AzureSynapseAnalytics",
+                    "type": "LinkedServiceReference"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,284 @@
+{
+    "name": "Pl02_FullLoad_ORAC_TO_ADLS",
+    "properties": {
+        "activities": [
+            {
+                "name": "Lookup_Configuration_Data",
+                "type": "Lookup",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": false,
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextReadSettings"
+                        }
+                    },
+                    "dataset": {
+                        "referenceName": "DS01_ORAC_Configuration_File",
+                        "type": "DatasetReference"
+                    },
+                    "firstRowOnly": false
+                }
+            },
+            {
+                "name": "ForEach2",
+                "type": "ForEach",
+                "dependsOn": [
+                    {
+                        "activity": "Lookup_Configuration_Data",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@activity('Lookup_Configuration_Data').output.value",
+                        "type": "Expression"
+                    },
+                    "isSequential": false,
+                    "activities": [
+                        {
+                            "name": "Lookup_TableCount",
+                            "type": "Lookup",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "OracleSource",
+                                    "oracleReaderQuery": {
+                                        "value": "SELECT COUNT(*) AS datacount FROM @{item().Schema}.@{item().Table} WHERE ((to_char(@{item().InsertDateField}, 'yyyy-MM-dd') = '2020-06-03' ) OR (to_char(@{item().UpdateDateField}, 'yyyy-MM-dd') = '2020-06-03') )  @{if(equals(item().PMC,'Yes') , ' AND PRINCIPAL_MAP_CD = 1','')} ",
+                                        "type": "Expression"
+                                    },
+                                    "partitionOption": "None",
+                                    "queryTimeout": "02:00:00"
+                                },
+                                "dataset": {
+                                    "referenceName": "DS01_OracleTable",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "tablename": {
+                                            "value": "@{item().Table}",
+                                            "type": "Expression"
+                                        },
+                                        "schemaname": {
+                                            "value": "@{item().Schema}",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                },
+                                "firstRowOnly": false
+                            }
+                        },
+                        {
+                            "name": "TableCount_Check_",
+                            "type": "IfCondition",
+                            "dependsOn": [
+                                {
+                                    "activity": "Lookup_TableCount",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "expression": {
+                                    "value": "@equals(activity('Lookup_TableCount').output.value[0].datacount, 0)",
+                                    "type": "Expression"
+                                },
+                                "ifFalseActivities": [
+                                    {
+                                        "name": "Copy_ORAC_TO_ADLS",
+                                        "type": "Copy",
+                                        "dependsOn": [],
+                                        "policy": {
+                                            "timeout": "7.00:00:00",
+                                            "retry": 0,
+                                            "retryIntervalInSeconds": 30,
+                                            "secureOutput": false,
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "source": {
+                                                "type": "OracleSource",
+                                                "oracleReaderQuery": {
+                                                    "value": "SELECT * FROM @{item().Schema}.@{item().Table} WHERE ((to_char(@{item().InsertDateField}, 'yyyy-MM-dd') = '2020-06-03' ) OR (to_char(@{item().UpdateDateField}, 'yyyy-MM-dd') = '2020-06-03') )  @{if(equals(item().PMC,'Yes') , ' AND PRINCIPAL_MAP_CD = 1','')} ",
+                                                    "type": "Expression"
+                                                },
+                                                "partitionOption": "None",
+                                                "queryTimeout": "02:00:00"
+                                            },
+                                            "sink": {
+                                                "type": "AvroSink",
+                                                "storeSettings": {
+                                                    "type": "AzureBlobFSWriteSettings"
+                                                },
+                                                "formatSettings": {
+                                                    "type": "AvroWriteSettings",
+                                                    "quoteAllText": true
+                                                }
+                                            },
+                                            "enableStaging": false
+                                        },
+                                        "inputs": [
+                                            {
+                                                "referenceName": "DS01_OracleTable",
+                                                "type": "DatasetReference",
+                                                "parameters": {
+                                                    "tablename": {
+                                                        "value": "@{item().Table}",
+                                                        "type": "Expression"
+                                                    },
+                                                    "schemaname": {
+                                                        "value": "@{item().Schema}",
+                                                        "type": "Expression"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "outputs": [
+                                            {
+                                                "referenceName": "DS04_AvroFiles",
+                                                "type": "DatasetReference",
+                                                "parameters": {
+                                                    "File_Name": {
+                                                        "value": "@concat(item().Table,'_2020-06-03')",
+                                                        "type": "Expression"
+                                                    },
+                                                    "Container_Name": "FY_2020-2021/June",
+                                                    "Folder_Name": {
+                                                        "value": "@item().Table",
+                                                        "type": "Expression"
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Wait_for_5mins",
+                "description": "Wait till copy to staging is done.",
+                "type": "Wait",
+                "dependsOn": [
+                    {
+                        "activity": "ForEach2",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "waitTimeInSeconds": 300
+                }
+            },
+            {
+                "name": "ForEach3",
+                "type": "ForEach",
+                "dependsOn": [
+                    {
+                        "activity": "Wait_for_5mins",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@pipeline().parameters.SP_Tables",
+                        "type": "Expression"
+                    },
+                    "activities": [
+                        {
+                            "name": "Stored procedure1",
+                            "type": "SqlServerStoredProcedure",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "storedProcedureName": {
+                                    "value": "@concat('dbo.',item(),'_UPSERT')",
+                                    "type": "Expression"
+                                }
+                            },
+                            "linkedServiceName": {
+                                "referenceName": "AzureSynapseAnalytics",
+                                "type": "LinkedServiceReference"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "parameters": {
+            "SP_Tables": {
+                "type": "array",
+                "defaultValue": [
+                    "AM_LIST",
+                    "AM_LIST_RANGE",
+                    "GM_MOD",
+                    "GM_VAR",
+                    "GM_MODEL_VAR_MAP",
+                    "GM_VAR_ECLR",
+                    "GM_STATE",
+                    "GM_TEHSIL",
+                    "GM_VILLAGE",
+                    "RH_ENQ",
+                    "RD_ENQ",
+                    "RD_ENQEXD",
+                    "RD_ENQFOLLOW",
+                    "RD_OLD_ENQFOLLOW",
+                    "RD_ENQIND",
+                    "RT_TEST_DRIVE",
+                    "ST_NEXA_QUOT",
+                    "SH_TV_EVAL",
+                    "SH_ORDBOOK",
+                    "SH_INVOICE",
+                    "SH_INV_SCHEME",
+                    "SD_INV_CHARGES"
+                ]
+            }
+        },
+        "folder": {
+            "name": "Historical Load"
+        },
+        "annotations": [],
+        "lastPublishTime": "2020-06-04T14:01:36Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

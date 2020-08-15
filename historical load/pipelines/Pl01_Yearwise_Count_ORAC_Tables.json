@@ -1,0 +1,105 @@
+{
+    "name": "Pl01_Yearwise_Count_ORAC_Tables",
+    "properties": {
+        "activities": [
+            {
+                "name": "Act01_Lookup_Configuration_Data",
+                "type": "Lookup",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": false,
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextReadSettings"
+                        }
+                    },
+                    "dataset": {
+                        "referenceName": "DS01_ORAC_Configuration_File",
+                        "type": "DatasetReference"
+                    },
+                    "firstRowOnly": false
+                }
+            },
+            {
+                "name": "Act02_Iterate_for_each_Oracle_Table",
+                "type": "ForEach",
+                "dependsOn": [
+                    {
+                        "activity": "Act01_Lookup_Configuration_Data",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@activity('Act01_Lookup_Configuration_Data').output.value",
+                        "type": "Expression"
+                    },
+                    "isSequential": true,
+                    "activities": [
+                        {
+                            "name": "Act02_2_Lookupdata_count_yearwise",
+                            "type": "Lookup",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "OracleSource",
+                                    "oracleReaderQuery": {
+                                        "value": "SELECT  count(*) as \"rows\", EXTRACT(YEAR FROM @{item().InsertDateField}) as \"year\" FROM @{item().Schema}.@{item().Table} GROUP BY EXTRACT(YEAR FROM @{item().InsertDateField})",
+                                        "type": "Expression"
+                                    },
+                                    "partitionOption": "None",
+                                    "queryTimeout": "02:00:00"
+                                },
+                                "dataset": {
+                                    "referenceName": "DS01_OracleTable",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "tablename": {
+                                            "value": "@item().Table",
+                                            "type": "Expression"
+                                        },
+                                        "schemaname": {
+                                            "value": "@item().Schema",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                },
+                                "firstRowOnly": false
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "folder": {
+            "name": "Historical Load"
+        },
+        "annotations": [],
+        "lastPublishTime": "2020-06-04T14:01:36Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

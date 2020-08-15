@@ -1,0 +1,16 @@
+{
+    "name": "Wait_for_7-8_minutes",
+    "type": "Wait",
+    "dependsOn": [
+        {
+            "activity": "ForEach_Copy_to_ADLS",
+            "dependencyConditions": [
+                "Succeeded"
+            ]
+        }
+    ],
+    "userProperties": [],
+    "typeProperties": {
+        "waitTimeInSeconds": 450
+    }
+}
