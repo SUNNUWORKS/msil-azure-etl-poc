@@ -1,0 +1,7 @@
+{
+    "name": "OracleDBSHIR",
+    "properties": {
+        "type": "SelfHosted",
+        "description": "This SHIR is connecting to the VM where the Oracle database is being hosted."
+    }
+}
