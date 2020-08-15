@@ -1,0 +1,34 @@
+{
+    "name": "DS01_SynapseTable",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "AzureSynapseAnalytics",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "Table": {
+                "type": "string"
+            },
+            "Schema": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Sink 2 : Azure Synapse Analytics"
+        },
+        "annotations": [],
+        "type": "AzureSqlDWTable",
+        "schema": [],
+        "typeProperties": {
+            "schema": {
+                "value": "@dataset().Schema",
+                "type": "Expression"
+            },
+            "table": {
+                "value": "@dataset().Table",
+                "type": "Expression"
+            }
+        }
+    },
+    "type": "Microsoft.DataFactory/factories/datasets"
+}

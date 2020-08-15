@@ -1,0 +1,33 @@
+{
+    "name": "DS02_ORACMasterConfiguration",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "AzureDataLakeStorage",
+            "type": "LinkedServiceReference"
+        },
+        "folder": {
+            "name": "Sink 1 : ADLS"
+        },
+        "annotations": [],
+        "type": "DelimitedText",
+        "typeProperties": {
+            "location": {
+                "type": "AzureBlobFSLocation",
+                "fileName": "MasterTables.txt",
+                "folderPath": "Configuration Data",
+                "fileSystem": "poc"
+            },
+            "columnDelimiter": "\t",
+            "escapeChar": "\\",
+            "firstRowAsHeader": true,
+            "quoteChar": "\""
+        },
+        "schema": [
+            {
+                "name": "Schema\tTable\tInsertDateField\tUpdateDateField\tReferenceTable\tReferenceKey\tReferenceInsertDate\tReferenceUpdateDate\tMasterORTransaction\tPMC\tFiscalYear",
+                "type": "String"
+            }
+        ]
+    },
+    "type": "Microsoft.DataFactory/factories/datasets"
+}
