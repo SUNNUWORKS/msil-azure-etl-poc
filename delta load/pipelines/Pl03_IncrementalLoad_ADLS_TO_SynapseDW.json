@@ -1,0 +1,153 @@
+{
+    "name": "Pl03_IncrementalLoad_ADLS_TO_SynapseDW",
+    "properties": {
+        "activities": [
+            {
+                "name": "CopyData_ADLS_TO_Synapse",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "AvroSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": false,
+                            "enablePartitionDiscovery": false
+                        }
+                    },
+                    "sink": {
+                        "type": "SqlDWSink",
+                        "preCopyScript": {
+                            "value": "TRUNCATE TABLE Staging.@{substring(pipeline().parameters.FileName,0, lastindexof(pipeline().parameters.FileName,'_'))}",
+                            "type": "Expression"
+                        },
+                        "allowPolyBase": true,
+                        "polyBaseSettings": {
+                            "rejectValue": 0,
+                            "rejectType": "value",
+                            "useTypeDefault": false
+                        },
+                        "disableMetricsCollection": false
+                    },
+                    "enableStaging": true,
+                    "stagingSettings": {
+                        "linkedServiceName": {
+                            "referenceName": "IncompatibleData",
+                            "type": "LinkedServiceReference"
+                        },
+                        "path": "poc/Incompatible Data/7656fd97-4b41-473c-b4a8-533a1a6b8e63"
+                    },
+                    "enableSkipIncompatibleRow": true,
+                    "logStorageSettings": {
+                        "linkedServiceName": {
+                            "referenceName": "IncompatibleData",
+                            "type": "LinkedServiceReference"
+                        },
+                        "path": "poc/Incompatible Data/7656fd97-4b41-473c-b4a8-533a1a6b8e63"
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "DS04_AvroFiles",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "File_Name": {
+                                "value": "@pipeline().parameters.FileName",
+                                "type": "Expression"
+                            },
+                            "Container_Name": {
+                                "value": "@substring(substring(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1))),add(indexof(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1))),'/'),1), sub(length(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1)))),add(indexof(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1))),'/'),1))),add(indexof(substring(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1))),add(indexof(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1))),'/'),1), sub(length(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1)))),add(indexof(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1))),'/'),1))),'/'),1),sub(length(substring(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1))),add(indexof(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1))),'/'),1), sub(length(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1)))),add(indexof(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1))),'/'),1)))),add(indexof(substring(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1))),add(indexof(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1))),'/'),1), sub(length(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1)))),add(indexof(substring(pipeline().parameters.FolderName,add(indexof(pipeline().parameters.FolderName,'/'),1), sub(length(pipeline().parameters.FolderName),add(indexof(pipeline().parameters.FolderName,'/'),1))),'/'),1))),'/'),1)))",
+                                "type": "Expression"
+                            },
+                            "Folder_Name": {
+                                "value": "@substring(pipeline().parameters.FileName,0, lastindexof(pipeline().parameters.FileName,'_'))",
+                                "type": "Expression"
+                            }
+                        }
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "DS01_SynapseTable",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "Table": {
+                                "value": "@substring(pipeline().parameters.FileName,0, lastindexof(pipeline().parameters.FileName,'_'))",
+                                "type": "Expression"
+                            },
+                            "Schema": "Staging"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "If Condition1",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "CopyData_ADLS_TO_Synapse",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@equals(substring(pipeline().parameters.FileName,0, lastindexof(pipeline().parameters.FileName,'_')),'AM_DEALER_LOC')",
+                        "type": "Expression"
+                    },
+                    "ifTrueActivities": [
+                        {
+                            "name": "Stored procedure_Am_dealer_Loc",
+                            "type": "SqlServerStoredProcedure",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "storedProcedureName": "[dbo].[AM_DEALER_LOC_UPSERT]"
+                            },
+                            "linkedServiceName": {
+                                "referenceName": "AzureSynapseAnalytics",
+                                "type": "LinkedServiceReference"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "parameters": {
+            "FolderName": {
+                "type": "string"
+            },
+            "FileName": {
+                "type": "string"
+            }
+        },
+        "variables": {
+            "test": {
+                "type": "String"
+            }
+        },
+        "folder": {
+            "name": "Delta Load"
+        },
+        "annotations": [],
+        "lastPublishTime": "2020-06-04T14:01:36Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

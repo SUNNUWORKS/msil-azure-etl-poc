@@ -1,0 +1,110 @@
+{
+    "name": "ForEach2",
+    "type": "ForEach",
+    "dependsOn": [
+        {
+            "activity": "Lookup_Configuration_Data",
+            "dependencyConditions": [
+                "Succeeded"
+            ]
+        }
+    ],
+    "userProperties": [],
+    "typeProperties": {
+        "items": {
+            "value": "@activity('Lookup_Configuration_Data').output.value",
+            "type": "Expression"
+        },
+        "isSequential": false,
+        "activities": [
+            {
+                "name": "Copy_ORAC_TO_ADLS",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "AvroSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": true,
+                            "wildcardFolderPath": {
+                                "value": "@item().Table",
+                                "type": "Expression"
+                            },
+                            "wildcardFileName": "*",
+                            "enablePartitionDiscovery": false
+                        }
+                    },
+                    "sink": {
+                        "type": "SqlDWSink",
+                        "preCopyScript": {
+                            "value": "TRUNCATE TABLE Staging.@{item().Table}",
+                            "type": "Expression"
+                        },
+                        "allowPolyBase": true,
+                        "polyBaseSettings": {
+                            "rejectValue": 0,
+                            "rejectType": "value",
+                            "useTypeDefault": true
+                        },
+                        "disableMetricsCollection": false
+                    },
+                    "enableStaging": true,
+                    "stagingSettings": {
+                        "linkedServiceName": {
+                            "referenceName": "IncompatibleData",
+                            "type": "LinkedServiceReference"
+                        },
+                        "path": "poc/Incompatible Data/Staging"
+                    },
+                    "enableSkipIncompatibleRow": true,
+                    "redirectIncompatibleRowSettings": {
+                        "linkedServiceName": {
+                            "referenceName": "IncompatibleData",
+                            "type": "LinkedServiceReference"
+                        },
+                        "path": {
+                            "value": "@concat('poc/Incompatible Data/',item().Table)",
+                            "type": "Expression"
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "DS04_AvroFiles",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "File_Name": "*",
+                            "Container_Name": "*",
+                            "Folder_Name": {
+                                "value": "@item().Table",
+                                "type": "Expression"
+                            }
+                        }
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "DS01_SynapseTable",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "Table": {
+                                "value": "@item().Table",
+                                "type": "Expression"
+                            },
+                            "Schema": "Staging"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,12 @@
+{
+    "name": "IncompatibleData",
+    "type": "Microsoft.DataFactory/factories/linkedservices",
+    "properties": {
+        "annotations": [],
+        "type": "AzureBlobStorage",
+        "typeProperties": {
+            "connectionString": "Connection string to your azure blob storage for staging data on cloud",
+            "encryptedCredential": "Specify encryted credential to your Azure Blob Storage"
+        }
+    }
+}

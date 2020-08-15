@@ -1,0 +1,34 @@
+{
+    "name": "DS01_OracleTable",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "OracleDBReporting",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "tablename": {
+                "type": "string"
+            },
+            "schemaname": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "Source 1 : Oracle On- Prem"
+        },
+        "annotations": [],
+        "type": "OracleTable",
+        "schema": [],
+        "typeProperties": {
+            "schema": {
+                "value": "@dataset().schemaname",
+                "type": "Expression"
+            },
+            "table": {
+                "value": "@dataset().tablename",
+                "type": "Expression"
+            }
+        }
+    },
+    "type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,17 @@
+{
+    "name": "Wait_for_5mins",
+    "description": "Wait till copy to staging is done.",
+    "type": "Wait",
+    "dependsOn": [
+        {
+            "activity": "ForEach2",
+            "dependencyConditions": [
+                "Succeeded"
+            ]
+        }
+    ],
+    "userProperties": [],
+    "typeProperties": {
+        "waitTimeInSeconds": 300
+    }
+}

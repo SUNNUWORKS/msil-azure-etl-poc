@@ -1,0 +1,12 @@
+{
+    "name": "AzureSynapseAnalytics",
+    "type": "Microsoft.DataFactory/factories/linkedservices",
+    "properties": {
+        "annotations": [],
+        "type": "AzureSqlDW",
+        "typeProperties": {
+            "connectionString": "Connection string to your Azure Synapse Analytics(formally DW)",
+            "encryptedCredential": "Specify your encripted credential to Azure Synapse Analytics(formally DW)"
+        }
+    }
+}

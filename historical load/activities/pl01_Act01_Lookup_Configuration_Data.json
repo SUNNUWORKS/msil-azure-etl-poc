@@ -1,0 +1,31 @@
+{
+    "name": "Act01_Lookup_Configuration_Data",
+    "type": "Lookup",
+    "dependsOn": [],
+    "policy": {
+        "timeout": "7.00:00:00",
+        "retry": 0,
+        "retryIntervalInSeconds": 30,
+        "secureOutput": false,
+        "secureInput": false
+    },
+    "userProperties": [],
+    "typeProperties": {
+        "source": {
+            "type": "DelimitedTextSource",
+            "storeSettings": {
+                "type": "AzureBlobFSReadSettings",
+                "recursive": false,
+                "enablePartitionDiscovery": false
+            },
+            "formatSettings": {
+                "type": "DelimitedTextReadSettings"
+            }
+        },
+        "dataset": {
+            "referenceName": "DS01_ORAC_Configuration_File",
+            "type": "DatasetReference"
+        },
+        "firstRowOnly": false
+    }
+}
